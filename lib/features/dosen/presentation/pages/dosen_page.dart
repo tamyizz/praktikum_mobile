@@ -1,52 +1,64 @@
 import 'package:flutter/material.dart';
-import '../../data/models/dosen_model.dart';
-import '../../data/repositories/dosen_repository.dart';
-import '../widgets/dosen_card.dart'; // INI IMPORTNYA
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/dosen_provider.dart';
+import '../widgets/dosen_widget.dart'; 
 
-class DosenPage extends StatefulWidget {
+class DosenPage extends ConsumerWidget {
   const DosenPage({super.key});
 
   @override
-  State<DosenPage> createState() => _DosenPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dosenState = ref.watch(dosenNotifierProvider);
+    final savedUsers = ref.watch(savedUsersProvider);
 
-class _DosenPageState extends State<DosenPage> {
-  final DosenRepository _repository = DosenRepository();
-  late Future<List<DosenModel>> _futureDosen;
-
-  @override
-  void initState() {
-    super.initState();
-    _futureDosen = _repository.getDosenList();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Data Dosen (API)"),
-        backgroundColor: Colors.blue,
+        title: const Text('Data Dosen'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: () => ref.invalidate(dosenNotifierProvider),
+            tooltip: "Refresh",
+          ),
+        ],
       ),
-      body: FutureBuilder<List<DosenModel>>(
-        future: _futureDosen,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
-          } else if (snapshot.hasData) {
-            final listDosen = snapshot.data!;
-            return ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: listDosen.length,
-              itemBuilder: (context, index) {
-                // SEKARANG MEMANGGIL WIDGET DARI FILE TERPISAH
-                return DosenCard(dosen: listDosen[index]); 
-              },
-            );
-          }
-          return const Center(child: Text("Tidak ada data"));
-        },
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section: Data Tersimpan
+          SavedUserSection(savedUsers: savedUsers, ref: ref),
+          
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: Text(
+              'Daftar Dosen',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+          ),
+          
+          // Section: List Dosen dari API
+          Expanded(
+            child: dosenState.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Gagal memuat data: $error'),
+                    ElevatedButton(
+                      onPressed: () => ref.read(dosenNotifierProvider.notifier).refresh(),
+                      child: const Text('Coba Lagi'),
+                    )
+                  ],
+                ),
+              ),
+              data: (dosenList) => DosenListWithSave(
+                dosenList: dosenList,
+                onRefresh: () => ref.invalidate(dosenNotifierProvider),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../dosen/presentation/pages/dosen_page.dart';
-import '../../../mahasiswa/presentation/page/mahasiswa_page.dart';
+import '../../../mahasiswa/presentation/pages/mahasiswa_page.dart';
 import '../../../profile/presentation/page/profile_page.dart';
 import '../../../mahasiswa_aktif/presentation/pages/mahasiswa_aktif_page.dart';
 

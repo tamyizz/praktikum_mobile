@@ -2,7 +2,7 @@ class MahasiswaModel {
   final int id;
   final String name;
   final String email;
-  final String body;
+  final String body; // Kita gunakan body sebagai detail tambahan
 
   MahasiswaModel({
     required this.id,
@@ -13,10 +13,10 @@ class MahasiswaModel {
 
   factory MahasiswaModel.fromJson(Map<String, dynamic> json) {
     return MahasiswaModel(
-      id: json['id'] ?? 0,
-      name: json['name'] ?? '',
-      email: json['email'] ?? '',
-      body: json['body'] ?? '',
+      id: json['id'],
+      name: json['name'],
+      email: json['email'],
+      body: json['body'],
     );
   }
 }
